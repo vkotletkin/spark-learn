@@ -45,3 +45,6 @@ build/
 
 ### Scala ###
 .bsp/
+
+### Spark cloud JARs (AWS SDK bundle is huge; copy into $SPARK_HOME/jars) ###
+installation/spark-cloud-jars/

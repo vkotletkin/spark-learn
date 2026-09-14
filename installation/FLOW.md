@@ -6,7 +6,7 @@
 Так же нужно настроить конфигурацию тачек.
 Подробнее: в [CONF.md](CONF.md)
 
-S3 / MinIO / object storage: [S3.md](S3.md)
+S3 / object storage: [S3.md](S3.md). Локально — SeaweedFS: [seaweedfs/docker-compose.yml](seaweedfs/docker-compose.yml).
 
 1) ./sbin/start-master.sh
 2) ./sbin/start-worker.sh localhost:7077

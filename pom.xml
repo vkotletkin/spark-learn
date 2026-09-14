@@ -48,7 +48,7 @@
     <!--
       S3/GCS/Azure connectors (hadoop-aws, AWS SDK, …).
       provided: not packed into the uber-jar; put jars on the cluster
-      (--packages or $SPARK_HOME/jars). -Plocal includes them for IDE runs.
+      (-packages or $SPARK_HOME/jars). -Plocal includes them for IDE runs.
       See installation/S3.md.
     -->
     <dependency>
