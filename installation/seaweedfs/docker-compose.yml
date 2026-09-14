@@ -1,0 +1,70 @@
+# SeaweedFS: master + volume + filer + S3 API.
+# Spark ходит только в S3: http://localhost:8333
+#
+#   docker compose -f installation/seaweedfs/docker-compose.yml up -d
+#
+# Порт volume 8080 наружу не публикуем — его занимает Spark Master UI.
+
+services:
+  master:
+    image: chrislusf/seaweedfs:latest
+    command: master -ip=master -ip.bind=0.0.0.0 -mdir=/data
+    ports:
+      - "9333:9333"
+    volumes:
+      - seaweedfs_master:/data
+    restart: unless-stopped
+
+  volume:
+    image: chrislusf/seaweedfs:latest
+    command: volume -ip=volume -master=master:9333 -ip.bind=0.0.0.0 -port=8080 -dir=/data
+    volumes:
+      - seaweedfs_volume:/data
+    depends_on:
+      - master
+    restart: unless-stopped
+
+  filer:
+    image: chrislusf/seaweedfs:latest
+    command: filer -ip=filer -master=master:9333 -ip.bind=0.0.0.0
+    working_dir: /data
+    ports:
+      - "8888:8888"
+    volumes:
+      - seaweedfs_filer:/data
+    depends_on:
+      - master
+      - volume
+    restart: unless-stopped
+
+  s3:
+    image: chrislusf/seaweedfs:latest
+    command: s3 -filer=filer:8888 -ip.bind=0.0.0.0 -config=/etc/seaweedfs/s3.json
+    ports:
+      - "8333:8333"
+    volumes:
+      - ./s3.json:/etc/seaweedfs/s3.json:ro
+    depends_on:
+      - master
+      - volume
+      - filer
+    restart: unless-stopped
+
+  init-bucket:
+    image: chrislusf/seaweedfs:latest
+    depends_on:
+      - s3
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+          echo "s3.bucket.list" | weed shell -master=master:9333 >/dev/null 2>&1 && break
+          sleep 2
+        done
+        echo "s3.bucket.create -name spark" | weed shell -master=master:9333 || true
+
+volumes:
+  seaweedfs_master:
+  seaweedfs_volume:
+  seaweedfs_filer:
