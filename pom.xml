@@ -9,14 +9,17 @@
   <version>1.0.0</version>
   <packaging>jar</packaging>
   <name>spark-learn</name>
-  <description>Scala Spark learning project (Spark 4.2.0)</description>
+  <description>Scala Spark learning project (Spark 4.1.3)</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>21</maven.compiler.release>
     <scala.version>2.13.18</scala.version>
     <scala.binary.version>2.13</scala.binary.version>
-    <spark.version>4.2.0</spark.version>
+    <!-- 4.1.3: Sedona 1.9.1 targets Spark 4.1 (not 4.2); patch 4.1.3 is fine. -->
+    <spark.version>4.1.3</spark.version>
+    <sedona.version>1.9.1</sedona.version>
+    <geotools.wrapper.version>1.9.1-33.5</geotools.wrapper.version>
     <!-- provided by default (cluster / spark-submit). Override with -Plocal for IDE runs. -->
     <spark.scope>provided</spark.scope>
   </properties>
@@ -55,6 +58,29 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-hadoop-cloud_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
+      <scope>${spark.scope}</scope>
+    </dependency>
+    <!--
+      Shaded Sedona for Spark 4.1 / Scala 2.13. Relocates JTS and other transitives
+      so they do not clash with Spark. Unshaded sedona-spark-4.1_2.13 is for
+      apps that manage exclusions themselves — not this project.
+      provided: copy jars from installation/spark-sedona-jars into $SPARK_HOME/jars.
+    -->
+    <dependency>
+      <groupId>org.apache.sedona</groupId>
+      <artifactId>sedona-spark-shaded-4.1_${scala.binary.version}</artifactId>
+      <version>${sedona.version}</version>
+      <scope>${spark.scope}</scope>
+    </dependency>
+    <!--
+      GeoTools on Maven Central (LGPL, cannot ship inside Sedona). Needed for
+      raster operators / GeoTIFF. Vector ST_Transform uses proj4sedona and works
+      without this jar.
+    -->
+    <dependency>
+      <groupId>org.datasyslab</groupId>
+      <artifactId>geotools-wrapper</artifactId>
+      <version>${geotools.wrapper.version}</version>
       <scope>${spark.scope}</scope>
     </dependency>
   </dependencies>
