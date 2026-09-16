@@ -6,7 +6,9 @@
 Так же нужно настроить конфигурацию тачек.
 Подробнее: в [CONF.md](CONF.md)
 
-S3 / object storage: [S3.md](S3.md). Локально — SeaweedFS: [seaweedfs/docker-compose.yml](seaweedfs/docker-compose.yml).
+S3 / object storage: [S3.md](S3.md). Локально — SeaweedFS + ClickHouse: [docker-compose.yml](../docker-compose.yml)
+(`docker compose up -d`). ClickHouse: `http://localhost:8123`, user/db `spark`, password `sparksecret`.
+JAR-ы коннектора: `installation/spark-clickhouse-jars/` → `$SPARK_HOME/jars`.
 
 1) ./sbin/start-master.sh
 2) ./sbin/start-worker.sh localhost:7077

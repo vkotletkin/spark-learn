@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
  *   3. spark.master system property (set by spark-submit --master)
  *   4. local[*] (IDE / bare java -jar)
  *
- * S3 (env overrides; defaults match installation/seaweedfs):
+ * S3 (env overrides; defaults match docker-compose SeaweedFS):
  *   S3_ENDPOINT, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_PATH
  */
 object S3Example {

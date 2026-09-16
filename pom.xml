@@ -20,6 +20,9 @@
     <spark.version>4.1.3</spark.version>
     <sedona.version>1.9.1</sedona.version>
     <geotools.wrapper.version>1.9.1-33.5</geotools.wrapper.version>
+    <!-- No spark-4.1 artifact yet; 4.0 runtime is the closest match for Spark 4.1.x. -->
+    <clickhouse.spark.connector.version>0.10.0</clickhouse.spark.connector.version>
+    <clickhouse.jdbc.version>0.9.5</clickhouse.jdbc.version>
     <!-- provided by default (cluster / spark-submit). Override with -Plocal for IDE runs. -->
     <spark.scope>provided</spark.scope>
   </properties>
@@ -82,6 +85,31 @@
       <artifactId>geotools-wrapper</artifactId>
       <version>${geotools.wrapper.version}</version>
       <scope>${spark.scope}</scope>
+    </dependency>
+    <!--
+      ClickHouse Spark connector (DataSource V2 + catalog).
+      provided: not packed into the uber-jar; copy jars from
+      installation/spark-clickhouse-jars into $SPARK_HOME/jars.
+      -Plocal includes them for IDE runs.
+    -->
+    <dependency>
+      <groupId>com.clickhouse.spark</groupId>
+      <artifactId>clickhouse-spark-runtime-4.0_${scala.binary.version}</artifactId>
+      <version>${clickhouse.spark.connector.version}</version>
+      <scope>${spark.scope}</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.clickhouse</groupId>
+      <artifactId>clickhouse-jdbc</artifactId>
+      <version>${clickhouse.jdbc.version}</version>
+      <classifier>all</classifier>
+      <scope>${spark.scope}</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 

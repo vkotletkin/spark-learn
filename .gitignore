@@ -49,3 +49,4 @@ build/
 ### Spark extra JARs (copy into $SPARK_HOME/jars) ###
 installation/spark-cloud-jars/
 installation/spark-sedona-jars/
+installation/spark-clickhouse-jars/
