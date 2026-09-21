@@ -65,7 +65,7 @@ services:
         echo "s3.bucket.create -name spark" | weed shell -master=master:9333 || true
 
   clickhouse:
-    image: clickhouse/clickhouse-server:25.8
+    image: clickhouse/clickhouse-server:26.8.5.13
     ports:
       - "8123:8123"
       - "9000:9000"
