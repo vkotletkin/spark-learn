@@ -51,3 +51,6 @@ installation/spark-cloud-jars/
 installation/spark-sedona-jars/
 installation/spark-clickhouse-jars/
 installation/spark-graphframes-jars/
+
+### Local Spark run ###
+spark-warehouse/

@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory
  *
  * Master resolution (first match wins):
  *   1. CLI arg, e.g. spark://10.0.0.10:7077 or local[*]
- *   2. SPARK_MASTER env
- *   3. spark.master system property (set by spark-submit --master)
- *   4. local[*] (IDE / bare java -jar)
+ *      2. SPARK_MASTER env
+ *      3. spark.master system property (set by spark-submit --master)
+ *      4. local[*] (IDE / bare java -jar)
  */
 object Main {
   private val log = LoggerFactory.getLogger(getClass)

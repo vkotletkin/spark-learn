@@ -10,12 +10,12 @@ import org.slf4j.LoggerFactory
  *
  * Master resolution (first match wins):
  *   1. CLI arg, e.g. spark://10.0.0.10:7077 or local[*]
- *   2. SPARK_MASTER env
- *   3. spark.master system property (set by spark-submit --master)
- *   4. local[*] (IDE / bare java -jar)
+ *      2. SPARK_MASTER env
+ *      3. spark.master system property (set by spark-submit --master)
+ *      4. local[*] (IDE / bare java -jar)
  *
  * S3 (env overrides; defaults match docker-compose SeaweedFS):
- *   S3_ENDPOINT, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_PATH
+ * S3_ENDPOINT, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_PATH
  */
 object S3Example {
   // SLF4J → Log4j2. Пишет в stderr драйвера, не в stdout. Не логировать внутри map/foreach.

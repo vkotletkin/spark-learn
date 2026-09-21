@@ -65,7 +65,7 @@ services:
         echo "s3.bucket.create -name spark" | weed shell -master=master:9333 || true
 
   clickhouse:
-    image: clickhouse/clickhouse-server:26.8.5.13
+    image: clickhouse/clickhouse-server:26.8.6.5
     ports:
       - "8123:8123"
       - "9000:9000"
@@ -74,12 +74,28 @@ services:
       CLICKHOUSE_USER: spark
       CLICKHOUSE_PASSWORD: sparksecret
       CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+      TZ: UTC
     volumes:
       - clickhouse_data:/var/lib/clickhouse
+      - ./installation/clickhouse/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d:ro
     ulimits:
       nofile:
         soft: 262144
         hard: 262144
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "clickhouse-client",
+          "--host", "127.0.0.1",
+          "--user", "spark",
+          "--password", "sparksecret",
+          "--query", "SELECT 1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 25s
     restart: unless-stopped
 
 volumes:
