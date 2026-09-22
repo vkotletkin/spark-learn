@@ -16,20 +16,25 @@ object ClickHousePreview {
     try {
       log.info("Spark {}, master={}", spark.version, spark.sparkContext.master)
 
-      spark.sql("SELECT cgi, zone, expected_imsi, lon, lat FROM clickhouse.spark.cells ORDER BY cgi")
-        .show(20, truncate = false)
+      spark.sql(
+        "SELECT id, lat, lon, code, lac, cellid FROM clickhouse.spark.base_stations ORDER BY id"
+      ).show(20, truncate = false)
 
       spark.sql(
         """
-          |SELECT zone, count(*) AS cells, sum(expected_imsi) AS seeded_imsi
-          |FROM clickhouse.spark.cells
-          |GROUP BY zone
-          |ORDER BY seeded_imsi DESC
+          |SELECT
+          |  code,
+          |  lac,
+          |  cellid,
+          |  count(*) AS gprs_rows,
+          |  count(DISTINCT identificator) AS uniq_ident
+          |FROM clickhouse.spark.gprs_data
+          |GROUP BY code, lac, cellid
+          |ORDER BY gprs_rows DESC
         """.stripMargin
-      ).show(truncate = false)
+      ).show(15, truncate = false)
 
-      spark.sql("SELECT count(*) AS positions FROM clickhouse.spark.positions").show()
-      spark.sql("SELECT conn_type, count(*) AS n FROM clickhouse.spark.connections GROUP BY conn_type").show()
+      spark.sql("SELECT count(*) AS gprs_rows FROM clickhouse.spark.gprs_data").show()
     } finally {
       spark.stop()
     }

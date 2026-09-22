@@ -6,9 +6,7 @@ import org.apache.spark.sql.functions.size
 import org.slf4j.LoggerFactory
 
 /**
- * Same Gi* path after join: connection × position → CGI, then x = number of connections.
- *
- * Seed uses the same ts on both tables (equi-join). Production is as-of with TTL.
+ * Same Gi* path on clickhouse.spark.bs_load. x = n_gprs.
  */
 object GetisOrdFromConnections {
   private val log = LoggerFactory.getLogger(getClass)
@@ -20,37 +18,34 @@ object GetisOrdFromConnections {
     try {
       log.info("Spark {}, master={}", spark.version, spark.sparkContext.master)
 
-      val perCell = spark.sql(
+      val perStation = spark.sql(
         """
           |SELECT
-          |  c.cgi,
-          |  c.zone,
-          |  CAST(count(*) AS DOUBLE) AS n_conn,
-          |  ST_Point(c.lon, c.lat) AS geometry
-          |FROM clickhouse.spark.connections conn
-          |JOIN clickhouse.spark.positions p
-          |  ON conn.imsi = p.imsi AND conn.ts = p.ts
-          |JOIN clickhouse.spark.cells c
-          |  ON p.cgi = c.cgi
-          |GROUP BY c.cgi, c.zone, c.lon, c.lat
+          |  id,
+          |  lat,
+          |  lon,
+          |  CAST(n_gprs AS DOUBLE) AS n_gprs,
+          |  ST_Point(lon, lat) AS geometry
+          |FROM clickhouse.spark.bs_load
         """.stripMargin
       )
 
       val weighted = Weighting.addBinaryDistanceBandColumn(
-        perCell,
+        perStation,
         1600.0,
         includeZeroDistanceNeighbors = false,
         includeSelf = true,
         geometry = "geometry",
         useSpheroid = true,
-        savedAttributes = Seq("cgi", "zone", "n_conn")
+        savedAttributes = Seq("id", "lat", "lon", "n_gprs")
       )
 
-      val giStar = GetisOrd.gLocal(weighted, "n_conn", star = true)
+      val giStar = GetisOrd.gLocal(weighted, "n_gprs", star = true)
         .select(
-          $"cgi",
-          $"zone",
-          $"n_conn",
+          $"id",
+          $"lat",
+          $"lon",
+          $"n_gprs",
           size($"weights").as("n_neighbors"),
           $"Z",
           $"P"
@@ -58,15 +53,20 @@ object GetisOrdFromConnections {
         .cache()
       giStar.count()
 
-      log.info("Top by connection count")
-      giStar.orderBy($"n_conn".desc).show(10, truncate = false)
+      log.info("Top by GPRS row count")
+      giStar.orderBy($"n_gprs".desc).show(10, truncate = false)
 
       log.info("Top by Gi* Z")
       giStar.orderBy($"Z".desc).show(10, truncate = false)
 
-      log.info("Key zones")
+      log.info("Key stations (Luzhniki, center, Solntsevo, Losiny Ostrov)")
       giStar
-        .filter($"zone".isin("stadium", "downtown", "suburb_spike", "park"))
+        .filter(
+          ($"lat".between(55.710, 55.722) && $"lon".between(37.545, 37.565)) ||
+            ($"lat".between(55.740, 55.770) && $"lon".between(37.590, 37.650)) ||
+            ($"lat".between(55.574, 55.586) && $"lon".between(37.462, 37.478)) ||
+            ($"lat".between(55.855, 55.885) && $"lon".between(37.755, 37.805))
+        )
         .orderBy($"Z".desc)
         .show(20, truncate = false)
     } finally {
