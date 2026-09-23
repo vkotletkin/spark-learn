@@ -30,11 +30,15 @@
   </properties>
 
   <dependencies>
-    <!-- Needed to compile Scala sources; cluster already has a matching Scala runtime -->
+    <!--
+      Needed to compile Scala sources. Cluster / spark-submit already has a matching
+      Scala runtime, so the default scope is provided. -Plocal switches it to compile.
+    -->
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
       <version>${scala.version}</version>
+      <scope>${spark.scope}</scope>
     </dependency>
 
     <!--
