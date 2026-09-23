@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory
 object Dbscan {
   private val log = LoggerFactory.getLogger(getClass)
 
-  private val EpsilonMeters = 100.0
-  private val MinPts = 4
+  private val EpsilonMeters = 250.0
+  private val MinPts = 20
 
   private val Home = (55.7000, 37.5000)
   private val Work = (55.7550, 37.6200)
@@ -78,7 +78,7 @@ object Dbscan {
       clustered
         .select($"id", $"kind", $"lat", $"lon", $"isCore", $"cluster")
         .orderBy($"cluster", $"id")
-        .show(50, truncate = false)
+        .show(60, truncate = false)
     } finally {
       spark.stop()
     }
@@ -110,14 +110,12 @@ object Dbscan {
       (id0 + i, "road", lat, lon)
     }
 
-  private val blobOffsets: Seq[(Double, Double)] = Seq(
-    (0.0, 0.0),
-    (40.0, 20.0),
-    (-30.0, 50.0),
-    (25.0, -40.0),
-    (-45.0, -15.0),
-    (15.0, 55.0)
-  )
+  // 5×4 пинга с шагом 20 м. Диаметр кучи ~100 м, все попадают в круг 250 м и набирают minPts.
+  private val blobOffsets: Seq[(Double, Double)] =
+    for {
+      east <- Seq(-40.0, -20.0, 0.0, 20.0, 40.0)
+      north <- Seq(-30.0, -10.0, 10.0, 30.0)
+    } yield (east, north)
 
   private def shift(center: (Double, Double), eastM: Double, northM: Double): (Double, Double) = {
     val (lat0, lon0) = center
