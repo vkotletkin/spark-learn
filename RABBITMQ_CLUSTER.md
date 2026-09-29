@@ -80,7 +80,7 @@ quorum queues со streams. У каждой Raft-группы есть лиде�
 | Отложенный повтор (delayed retry) в quorum queues                                           | Задержка перед повторной доставкой без схем с DLX и TTL. Настроено в политике.                                                                                                                                                                          |
 | `basic.nack` больше не увеличивает `delivery-count`                                         | **Важно:** если приложение отбрасывает «ядовитое» сообщение через `nack(requeue=true)`, `delivery-limit` никогда не сработает, и сообщение будет ходить по кругу бесконечно. Для «ошибки обработки» используйте `basic.reject`: он счётчик увеличивает. |
 | 32 уровня строгого приоритета в quorum queues                                               | `x-max-priority` не нужен, достаточно выставлять `priority` у сообщения.                                                                                                                                                                                |
-| `channel_max` и `connection_max` переименованы в `max_channels` и `max_connections` (4.3.1) | Старые имена работают как алиасы. Использую новые.                                                                                                                                                                                                      |
+| `channel_max` переименован в `max_channels_per_connection`, `connection_max` — в `max_connections` (4.3.1) | Алиасы — прежние имена. Ключа `max_channels` в схеме нет, с ним нода не стартует.                                                                                                                                                                        |
 | Лимиты соединений для `management` и `prometheus` (4.3.1)                                   | Защищают HTTP API от наплыва запросов.                                                                                                                                                                                                                  |
 | `management.credential_encryption_secret` (4.3.5)                                           | UI больше не хранит в браузере логин и пароль в открытом виде. Секрет должен быть одинаковым на всех нодах.                                                                                                                                             |
 
@@ -170,7 +170,7 @@ max_connections = C_node_failed × 1.5 = 4500
   строки `connection_*`).
 
 ```
-max_channels = 128 (на одно соединение)
+max_channels_per_connection = 128 (на одно соединение)
 ```
 
 Типичное приложение использует 1–20 каналов. Лимит защищает от утечки каналов: приложение, которое открывает канал на
@@ -284,6 +284,7 @@ services:
       - ./data:/var/lib/rabbitmq
       - ./conf/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
       - ./conf/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+      - ./conf/99-override.conf:/etc/rabbitmq/conf.d/99-override.conf:ro
       - ./.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie
 
     # L = RAM_host(16) − OS_reserve(2) = 14 GiB.
@@ -408,8 +409,9 @@ heartbeat = 60
 # По памяти: 4500 × ~200 KiB ≈ 880 MiB ≈ 11% от W.
 max_connections = 4500
 
-# Каналов на одно соединение. Защита от утечек каналов в приложениях. Типично нужно 1–20.
-max_channels = 128
+# Каналов на одно соединение. Алиас старого имени — channel_max.
+# Защита от утечек каналов в приложениях. Типично нужно 1–20.
+max_channels_per_connection = 128
 
 # Burst(1000) × 4 = 4096. На хосте net.core.somaxconn должен быть ≥ этого значения.
 tcp_listen_options.backlog = 4096
@@ -423,6 +425,8 @@ tcp_listen_options.keepalive = true
 # =====================================================================
 
 # guest может входить только с localhost.
+# Образ *-management перебивает это файлом conf.d/10-defaults.conf, поэтому то же
+# значение повторено в conf/99-override.conf: conf.d грузится после rabbitmq.conf.
 loopback_users.guest = true
 
 # Применяется ТОЛЬКО при первом старте на пустом data/. Позже меняйте через rabbitmqctl или definitions.
@@ -468,6 +472,17 @@ log.file = false
 
 Здесь только UI с HTTP API и метрики. Каждый лишний плагин — это память и поверхность атаки. Набор плагинов должен
 совпадать на всех нодах. Точка в конце обязательна: это Erlang-терм.
+
+### `conf/99-override.conf`
+
+```ini
+loopback_users.guest = true
+```
+
+Образ `rabbitmq:4.3.6-management` добавляет `/etc/rabbitmq/conf.d/10-defaults.conf` с `loopback_users.guest = false`
+(guest доступен из сети) и `log.console = true`. Каталог `conf.d` читается после `rabbitmq.conf`, более поздний файл
+перекрывает ранний. Без `99-override.conf` на работающей ноде список loopback-пользователей пустой, хотя в
+`rabbitmq.conf` стоит `true`. Имя `99-*` идёт после `10-defaults.conf`.
 
 ### Политики (применяются один раз, на любой ноде)
 

@@ -1,0 +1,36 @@
+# Локальный RabbitMQ 4.3.6, тот же набор, что сейчас запущен.
+# Кластер из 3 нод на отдельных хостах — в RABBITMQ_CLUSTER.md.
+#
+#   docker compose -f installation/rabbitmq/docker-compose.yml up -d
+
+services:
+  rabbitmq:
+    image: rabbitmq:4.3.6-management
+    container_name: rabbitmq-config-test
+    hostname: rmq1
+    restart: "no"
+    environment:
+      RABBITMQ_NODENAME: rabbit@rmq1
+      RABBITMQ_USE_LONGNAME: "false"
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "+sbwt none +sbwtdcpu none +sbwtdio none"
+    extra_hosts:
+      - "rmq1:127.0.0.1"
+      - "rmq2:127.0.0.1"
+      - "rmq3:127.0.0.1"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "15692:15692"
+    volumes:
+      - ./data:/var/lib/rabbitmq
+      - ./conf/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./conf/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+      - ./conf/99-override.conf:/etc/rabbitmq/conf.d/99-override.conf:ro
+      - ./.erlang.cookie:/var/lib/rabbitmq/.erlang.cookie
+    mem_limit: 2g
+    memswap_limit: 2g
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    stop_grace_period: 20s

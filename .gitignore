@@ -54,3 +54,7 @@ installation/spark-graphframes-jars/
 
 ### Local Spark run ###
 spark-warehouse/
+
+### Local RabbitMQ ###
+installation/rabbitmq/data/
+installation/rabbitmq/.erlang.cookie
