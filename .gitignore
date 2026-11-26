@@ -51,6 +51,9 @@ installation/spark-cloud-jars/
 installation/spark-clickhouse-jars/
 installation/spark-graphframes-jars/
 
+### Offline Spark documentation mirror ###
+docs/
+
 ### Local Spark run ###
 spark-warehouse/
 
