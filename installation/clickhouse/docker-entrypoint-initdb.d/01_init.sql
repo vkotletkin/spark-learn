@@ -1,4 +1,4 @@
--- Demo base stations and GPRS facts for Sedona Getis-Ord Gi*.
+-- Demo base stations and GPRS facts for Spark / ClickHouse examples.
 -- Init on first empty volume; re-apply anytime with clickhouse-client --multiquery.
 
 CREATE DATABASE IF NOT EXISTS spark;

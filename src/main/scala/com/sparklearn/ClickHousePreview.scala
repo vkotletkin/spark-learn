@@ -12,7 +12,7 @@ object ClickHousePreview {
   private val log = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]): Unit = {
-    val spark = Sessions.sedonaWithClickHouse("spark-learn-ch-preview", args)
+    val spark = Sessions.withClickHouse("spark-learn-ch-preview", args)
     try {
       log.info("Spark {}, master={}", spark.version, spark.sparkContext.master)
 

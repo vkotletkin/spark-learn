@@ -9,12 +9,13 @@
 S3 / object storage: [S3.md](S3.md). Локально — SeaweedFS + ClickHouse: [docker-compose.yml](../docker-compose.yml)
 (`docker compose up -d`). ClickHouse: `http://localhost:8123`, user/db `spark`, password `sparksecret`.
 JAR-ы в `$SPARK_HOME/jars` на всех узлах:
-- `installation/spark-cloud-jars/` (S3)
-- `installation/spark-sedona-jars/`
-- `installation/spark-clickhouse-jars/`
-- `installation/spark-graphframes-jars/`
 
-Полный `--packages` (если JAR-ы не класть в `$SPARK_HOME/jars`): [START.md](START.md).
+```bash
+./installation/fetch-spark-jars.sh
+cp installation/spark-*-jars/*.jar "$SPARK_HOME/jars/"
+```
+
+Либо один раз `--packages` из [START.md](START.md). Версии в корневом `pom.xml` (Spark **4.2.1**).
 
 Кейсы GraphFrames / SQL по биллингу и БС: [ALGORITHMS.md](ALGORITHMS.md).
 

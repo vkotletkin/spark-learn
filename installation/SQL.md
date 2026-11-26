@@ -35,7 +35,7 @@ SETTINGS optimize_aggregation_in_order = 1;
 В Spark:
 
 ```sql
-SELECT id, lat, lon, uniq_ident, ST_Point(lon, lat) AS geometry
+SELECT id, lat, lon, uniq_ident
 FROM clickhouse.spark.bs_load
 ```
 
